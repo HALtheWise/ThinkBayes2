@@ -23,6 +23,7 @@ Pdf: represents a continuous probability density function
 
 import bisect
 import copy
+import itertools
 import logging
 import math
 import random
@@ -845,22 +846,21 @@ class Joint(Pmf):
         return interval
 
 
-def MakeJoint(pmf1, pmf2):
+def MakeJoint(*pmfs, repeat=1):
     """Joint distribution of values from pmf1 and pmf2.
 
     Assumes that the PMFs represent independent random variables.
 
     Args:
-        pmf1: Pmf object
-        pmf2: Pmf object
+        pmf1...: Pmf objects
+        repeat: How many times to repeat the provided PMFs, with the same semantics as itertools.product()
 
     Returns:
         Joint pmf of value pairs
     """
     joint = Joint()
-    for v1, p1 in pmf1.Items():
-        for v2, p2 in pmf2.Items():
-            joint.Set((v1, v2), p1 * p2)
+    for products in itertools.product(*[pmf.Items() for pmf in pmfs], repeat=repeat):
+        joint.Set(tuple((value for value, p in products)), np.product([p for value, p in products]))
     return joint
 
 
